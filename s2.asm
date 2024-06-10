@@ -1547,61 +1547,64 @@ PlaySoundLocal:
 
 ; sub_1388:
 PauseGame:
-	nop
-	tst.b	(Life_count).w	; do you have any lives left?
-	beq.w	Unpause		; if not, branch
+    nop
+    tst.b   (Life_count).w   ; do you have any lives left?
+    beq.w   Unpause          ; if not, branch
     if fixBugs
-	; The game still lets you pause if player 2 got a Game Over, or if
-	; either player got a Time Over. The following code fixes this.
-	tst.b	(Life_count_2P).w
-	beq.w	Unpause
-	tst.b	(Time_Over_flag).w
-	bne.w	Unpause
-	tst.b   (Time_Over_flag_2P).w
-	bne.w   Unpause
+    ; The game still lets you pause if player 2 got a Game Over, or if
+    ; either player got a Time Over. The following code fixes this.
+    tst.b   (Life_count_2P).w
+    beq.w   Unpause
+    tst.b   (Time_Over_flag).w
+    bne.w   Unpause
+    tst.b   (Time_Over_flag_2P).w
+    bne.w   Unpause
     endif
-	tst.w	(Game_paused).w	; is game already paused?
-	bne.s	+		; if yes, branch
-	move.b	(Ctrl_1_Press).w,d0 ; is Start button pressed?
-	or.b	(Ctrl_2_Press).w,d0 ; (either player)
-	andi.b	#button_start_mask,d0
-	beq.s	Pause_DoNothing	; if not, branch
+    tst.w   (Game_paused).w  ; is game already paused?
+    bne.s   +                ; if yes, branch
+    move.b  (Ctrl_1_Press).w,d0 ; is Start button pressed?
+    or.b    (Ctrl_2_Press).w,d0 ; (either player)
+    andi.b  #button_start_mask,d0
+    beq.s   Pause_DoNothing  ; if not, branch
 +
-	move.w	#1,(Game_paused).w	; freeze time
-	move.b	#MusID_Pause,(Sound_Queue.Music0).w	; pause music
+    move.w  #1,(Game_paused).w   ; freeze time
+    move.b  #MusID_Pause,(Sound_Queue.Music0).w   ; pause music
 ; loc_13B2:
 Pause_Loop:
-	move.b	#VintID_Pause,(Vint_routine).w
-	bsr.w	WaitForVint
-	tst.b	(Slow_motion_flag).w	; is slow-motion cheat on?
-	beq.s	Pause_ChkStart		; if not, branch
-	btst	#button_A,(Ctrl_1_Press).w	; is button A pressed?
-	beq.s	Pause_ChkBC		; if not, branch
-	move.b	#GameModeID_TitleScreen,(Game_Mode).w ; set game mode to 4 (title screen)
-	nop
-	bra.s	Pause_Resume
+    move.b  #VintID_Pause,(Vint_routine).w
+    bsr.w   WaitForVint
+    tst.b   (Slow_motion_flag).w   ; is slow-motion cheat on?
+    beq.s   Pause_ChkStart        ; if not, branch
+    btst    #button_A,(Ctrl_1_Press).w   ; is button A pressed?
+    beq.s   Pause_ChkBC           ; if not, branch
+    move.b  #GameModeID_TitleScreen,(Game_Mode).w   ; set game mode to 4 (title screen)
+    nop
+    bra.s   Pause_Resume
 ; ===========================================================================
 ; loc_13D4:
 Pause_ChkBC:
-	btst	#button_B,(Ctrl_1_Held).w ; is button B pressed?
-	bne.s	Pause_SlowMo		; if yes, branch
-	btst	#button_C,(Ctrl_1_Press).w ; is button C pressed?
-	bne.s	Pause_SlowMo		; if yes, branch
+    btst    #button_B,(Ctrl_1_Held).w ; is button B pressed?
+    beq.s   Pause_ChkC             ; if not, branch
+    bra.s   Pause_Loop             ; if yes, loop (no slow-motion advance)
+Pause_ChkC:
+    btst    #button_C,(Ctrl_1_Press).w ; is button C pressed?
+    beq.s   Pause_ChkStart         ; if not, branch
+    bra.s   Pause_Loop             ; if yes, loop (no slow-motion advance)
 ; loc_13E4:
 Pause_ChkStart:
-	move.b	(Ctrl_1_Press).w,d0	; is Start button pressed?
-	or.b	(Ctrl_2_Press).w,d0	; (either player)
-	andi.b	#button_start_mask,d0
-	beq.s	Pause_Loop	; if not, branch
+    move.b  (Ctrl_1_Press).w,d0   ; is Start button pressed?
+    or.b    (Ctrl_2_Press).w,d0   ; (either player)
+    andi.b  #button_start_mask,d0
+    beq.s   Pause_Loop    ; if not, branch
 ; loc_13F2:
 Pause_Resume:
-	move.b	#MusID_Unpause,(Sound_Queue.Music0).w	; unpause the music
+    move.b  #MusID_Unpause,(Sound_Queue.Music0).w   ; unpause the music
 ; loc_13F8:
 Unpause:
-	move.w	#0,(Game_paused).w	; unpause the game
+    move.w  #0,(Game_paused).w   ; unpause the game
 ; return_13FE:
 Pause_DoNothing:
-	rts
+    rts
 ; ===========================================================================
 ; loc_1400:
 Pause_SlowMo:
@@ -4447,10 +4450,6 @@ TitleScreen_Loop:
     else
 	move.w	#emerald_hill_zone_act_1,(Current_ZoneAndAct).w
     endif
-	tst.b	(Level_select_flag).w	; has level select cheat been entered?
-	beq.s	+			; if not, branch
-	btst	#button_A,(Ctrl_1_Held).w ; is A held down?
-	beq.s	+	 		; if not, branch
 	move.b	#GameModeID_LevelSelect,(Game_Mode).w ; => LevelSelectMenu
 	rts
 ; ---------------------------------------------------------------------------
